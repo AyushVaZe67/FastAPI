@@ -4,8 +4,21 @@ class Patient(BaseModel):
     name: str
     age: int
 
-def 
+def insert_patient_data(patient: Patient):
+    print(patient.name)
+    # print(patient.age)
+    print('inserted')
 
-patient_info = {'name':'ayush','age':22}
+def update_patient_data(patient: Patient):
+    print(patient.name)
+    # print(patient.age)
+    print('updated')
 
-p1 = Patient
+
+patient_info = {'name':'Ayush','age':22}
+
+p1 = Patient(**patient_info)
+
+
+insert_patient_data(p1)
+update_patient_data(p1)
