@@ -1,13 +1,13 @@
-from pydantic import BaseModel, EmailStr, AnyUrl
+from pydantic import BaseModel, EmailStr, AnyUrl, Field
 from typing import List, Dict, Optional
 
 class Patient(BaseModel):
-    name: str
+    name: str = Field(max_length=50)
     email: EmailStr
-    age: int
-    weight: float
+    age: int = Field(gt=0,lt=120)
+    weight: float = Field(gt=0, lt=100)
     married: bool = False
-    allergies: Optional[List[str]] = None
+    allergies: Optional[List[str]] = Field(max_length=5)
     contact_details: Dict[str, str]
     linkedin_url : AnyUrl
 
