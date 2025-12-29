@@ -9,7 +9,7 @@ class Address(BaseModel):
 class Patient(BaseModel):
 
     name: str
-    gender: str = 'Male'
+    gender: str 
     age: int
     address: Address
 
@@ -21,7 +21,7 @@ patient_dict = {'name': 'nitish', 'age': 35, 'address': address1}
 
 patient1 = Patient(**patient_dict)
 
-temp = patient1.model_dump()
+temp = patient1.model_dump(include=['name','gender'])
 
 print(temp)
 print(type(temp))
