@@ -1,6 +1,6 @@
 import json
 
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 from fastapi import FastAPI, HTTPException, Path, Query
 from pydantic import BaseModel, Field, computed_field
 from fastapi.responses import JSONResponse
@@ -35,6 +35,15 @@ class Patient(BaseModel):
         else:
             return 'Obese'
 
+
+class PatientUpdate(BaseModel):
+    name: Annotated[Optional[str], Field(default=None)]
+    city: Annotated[Optional[str], Field(default=None)]
+    age: Annotated[Optional[int], Field(default=None, gt=0)]
+    gender: Annotated[Optional[Literal['male', 'female']], Field(default=None)]
+    height: Annotated[Optional[float], Field(default=None, gt=0)]
+    weight: Annotated[Optional[float], Field(default=None, gt=0)]
+
 def load_data():
     with open('patients.json','r') as f:
         data = json.load(f)
@@ -48,6 +57,22 @@ def save_data(data):
 def hello():
     return {'message':'Patient Management System API'}
 
+@app.get("/about")
+def about():
+    return {"message": "Fully functional API to manage patient's records"}
+
+@app.get("/view")
+def view():
+    data = load_data()
+    return data
+
+@app.get('/patient/{patient_id}')
+def view_patient(patient_id: str = Path(..., description='ID of patient in DB')):
+    data = load_data()
+
+    if patient_id in data:
+        return data[patient_id]
+    raise HTTPException(status_code=404, detail='Patient not found man!')
 
 @app.post('/create')
 def create_patient(patient : Patient):
@@ -63,3 +88,28 @@ def create_patient(patient : Patient):
 
     return JSONResponse(status_code=201, content={'message':'Patient created successfully'})
 
+@app.put('/edit/{patient_id}')
+def update_patient(patient_id: str, patient_update: PatientUpdate):
+
+    data = load_data()
+
+    if patient_id not in data:
+        raise HTTPException(status_code=404, detail='Patient Not Found')
+
+    existing_patient_info = data[patient_id]
+
+    updated_patient_info = patient_update.model_dump(exclude_unset=True)
+
+    for key, value in updated_patient_info.items():
+        existing_patient_info[key] = value
+
+    existing_patient_info['id'] = patient_id
+    patient_pydantic_obj = Patient(**existing_patient_info)
+
+    existing_patient_info = patient_pydantic_obj.model_dump(exclude=[id])
+
+    data[patient_id] = existing_patient_info
+
+    save_data(data)
+
+    return JSONResponse(status_code=200, content='Patient Updated')
